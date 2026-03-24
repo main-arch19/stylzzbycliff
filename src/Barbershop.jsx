@@ -10,7 +10,7 @@ const BARBER = {
   title: "Master Barber & Stylist",
   experience: "10+ Years Experience",
   bio: "Precision fades, clean line-ups, and creative styling — every cut is a statement. Walk in looking good, leave looking unforgettable.",
-  instagram: "https://instagram.com/stylzzbycliff",
+  instagram: "https://www.instagram.com/stylzzbycliff__thebarber/",
   bookingLink: "#",
   phone: "+1 (876) 000-0000",
   address: "Kingston, Jamaica",
@@ -878,7 +878,7 @@ export default function StylzzByCliff() {
           ))}
         </div>
         <a href={BARBER.instagram} target="_blank" rel="noreferrer" className="btn-secondary gallery-follow">
-          {Icons.instagram} Follow @stylzzbycliff
+          {Icons.instagram} Follow @stylzzbycliff__thebarber
         </a>
       </section>
 
@@ -999,7 +999,7 @@ export default function StylzzByCliff() {
             <div className="contact-item">{Icons.phone} {BARBER.phone}</div>
             <div className="contact-item">
               {Icons.instagram}
-              <a href={BARBER.instagram} target="_blank" rel="noreferrer">@stylzzbycliff</a>
+              <a href={BARBER.instagram} target="_blank" rel="noreferrer">@stylzzbycliff__thebarber</a>
             </div>
             <a href={BARBER.bookingLink} className="btn-primary" target="_blank" rel="noreferrer" style={{ marginTop: 28, display: "inline-flex" }}>
               {Icons.scissors} Book Now
