@@ -83,14 +83,20 @@ const REVIEWS = [
 const INSTAGRAM_POSTS = [
   { id: 1, gradient: "linear-gradient(135deg, #2c2420, #3d322c)", label: "Skin Fade"      },
   { id: 2, gradient: "linear-gradient(135deg, #1a1714, #2d2824)", label: "Textured Crop"  },
-  { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Beard Work"     },
+  { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Fade in Motion", video: true },
   { id: 4, gradient: "linear-gradient(135deg, #2d2824, #1a1714)", label: "Line Up"        },
   { id: 5, gradient: "linear-gradient(135deg, #1a1714, #3d322c)", label: "Classic Taper"  },
-  { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Design Art"     },
+  { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Blade & Style",  video: true },
 ];
 
 /* ── Icons ── */
 const Icons = {
+  play: (
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="12" r="11" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5"/>
+      <polygon points="10,8 17,12 10,16" fill="white"/>
+    </svg>
+  ),
   scissors: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
@@ -483,6 +489,50 @@ const css = `
   }
   .gallery-item:hover .gallery-item-overlay { opacity: 1; }
   .gallery-follow { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; }
+  /* ── Flip cards ── */
+  .gallery-flip { perspective: 1000px; aspect-ratio: 1; }
+  .gallery-flip-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .gallery-flip:hover .gallery-flip-inner { transform: rotateY(180deg); }
+  .flip-front, .flip-back {
+    position: absolute; inset: 0; border-radius: var(--radius-sm);
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+  .flip-front {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 14px; cursor: pointer;
+  }
+  .flip-front-label {
+    font-family: var(--font-condensed); font-size: 12px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5);
+  }
+  .flip-back {
+    transform: rotateY(180deg);
+    background: var(--accent);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 20px;
+  }
+  .flip-back-title {
+    font-family: var(--font-display); font-size: 22px; letter-spacing: 3px;
+    color: white; line-height: 1.1;
+  }
+  .flip-back-sub {
+    font-family: var(--font-condensed); font-size: 12px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.75);
+  }
+  .flip-back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white; color: var(--accent);
+    padding: 9px 20px; border-radius: 6px;
+    font-family: var(--font-condensed); font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    text-decoration: none; margin-top: 6px; transition: var(--transition);
+  }
+  .flip-back-btn:hover { background: var(--accent-light); }
 
   /* ── Loyalty ── */
   .loyalty-card {
@@ -870,7 +920,23 @@ export default function StylzzByCliff() {
         <h2 className="section-title">LATEST WORK</h2>
         <p className="section-sub">Fresh cuts from the chair. Follow along for daily inspiration.</p>
         <div className="gallery-grid">
-          {INSTAGRAM_POSTS.map((p) => (
+          {INSTAGRAM_POSTS.map((p) => p.video ? (
+            <div key={p.id} className="gallery-flip">
+              <div className="gallery-flip-inner">
+                <div className="flip-front" style={{ background: p.gradient }}>
+                  {Icons.play}
+                  <span className="flip-front-label">{p.label}</span>
+                </div>
+                <div className="flip-back">
+                  <div className="flip-back-title">WATCH<br/>THE CUT</div>
+                  <div className="flip-back-sub">Video on Instagram</div>
+                  <a href={BARBER.instagram} target="_blank" rel="noreferrer" className="flip-back-btn">
+                    {Icons.instagram} Watch Now
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
             <a key={p.id} href={BARBER.instagram} target="_blank" rel="noreferrer" className="gallery-item">
               <div className="gallery-item-bg" style={{ background: p.gradient }}>{p.label}</div>
               <div className="gallery-item-overlay">{Icons.instagram} View</div>
