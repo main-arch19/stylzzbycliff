@@ -452,7 +452,7 @@ const css = `
     display: flex; align-items: center; justify-content: center;
     border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden;
   }
-  .about-photo img { width: 60%; height: auto; opacity: 0.2; filter: brightness(2); }
+  .about-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
   .about-photo-label {
     position: absolute; bottom: 20px;
     font-family: var(--font-condensed); font-size: 12px;
@@ -895,8 +895,7 @@ export default function StylzzByCliff() {
       <section className="about-section" id="barber">
         <div className="about-inner">
           <div className="about-photo">
-            <img src="./logo.jpg" alt={BARBER.name} />
-            <span className="about-photo-label">Add your photo here</span>
+            <img src="./artist.jpg" alt={BARBER.name} />
           </div>
           <div className="about-info">
             <div className="section-label">The Artist</div>
