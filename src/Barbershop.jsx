@@ -242,9 +242,9 @@ const css = `
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     height: var(--nav-height); display: flex; align-items: center; justify-content: space-between;
     padding: 0 28px;
-    background: rgba(242,239,234,0.88);
+    background: rgba(196,187,179,0.92);
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid rgba(217,212,203,0.5);
+    border-bottom: 1px solid rgba(160,152,144,0.4);
     transition: var(--transition);
   }
   .nav.scrolled { box-shadow: 0 2px 20px rgba(26,23,20,0.06); }
