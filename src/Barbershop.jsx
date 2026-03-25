@@ -81,11 +81,11 @@ const REVIEWS = [
 ];
 
 const INSTAGRAM_POSTS = [
-  { id: 1, gradient: "linear-gradient(135deg, #2c2420, #3d322c)", label: "Skin Fade"      },
-  { id: 2, gradient: "linear-gradient(135deg, #1a1714, #2d2824)", label: "Textured Crop"  },
+  { id: 1, photo: "./photo1.jpeg", label: "Skin Fade"      },
+  { id: 2, photo: "./photo2.jpeg", label: "Textured Crop"  },
   { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Fade in Motion", video: true },
-  { id: 4, gradient: "linear-gradient(135deg, #2d2824, #1a1714)", label: "Line Up"        },
-  { id: 5, gradient: "linear-gradient(135deg, #1a1714, #3d322c)", label: "Classic Taper"  },
+  { id: 4, photo: "./photo3.jpeg", label: "Line Up"        },
+  { id: 5, photo: "./photo4.jpeg", label: "Classic Taper"  },
   { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Blade & Style",  video: true },
 ];
 
@@ -481,6 +481,7 @@ const css = `
     font-family: var(--font-condensed); font-size: 13px; color: rgba(255,255,255,0.4);
     font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
   }
+  .gallery-item-bg img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .gallery-item-overlay {
     position: absolute; inset: 0; background: rgba(196,80,42,0.75);
     display: flex; align-items: center; justify-content: center;
@@ -938,7 +939,9 @@ export default function StylzzByCliff() {
             </div>
           ) : (
             <a key={p.id} href={BARBER.instagram} target="_blank" rel="noreferrer" className="gallery-item">
-              <div className="gallery-item-bg" style={{ background: p.gradient }}>{p.label}</div>
+              <div className="gallery-item-bg">
+                <img src={p.photo} alt={p.label} />
+              </div>
               <div className="gallery-item-overlay">{Icons.instagram} View</div>
             </a>
           ))}
