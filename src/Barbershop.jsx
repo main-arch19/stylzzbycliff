@@ -83,10 +83,10 @@ const REVIEWS = [
 const INSTAGRAM_POSTS = [
   { id: 1, photo: "./photo1.jpeg", label: "Skin Fade"      },
   { id: 2, photo: "./photo2.jpeg", label: "Textured Crop"  },
-  { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Fade in Motion", video: true },
+  { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Fade in Motion", video: true, videoSrc: "./video1.mp4" },
   { id: 4, photo: "./photo3.jpeg", label: "Line Up"        },
   { id: 5, photo: "./photo4.jpeg", label: "Classic Taper"  },
-  { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Blade & Style",  video: true },
+  { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Blade & Style",  video: true, videoSrc: "./video2.mp4" },
 ];
 
 /* ── Icons ── */
@@ -505,11 +505,19 @@ const css = `
   }
   .flip-front {
     display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 14px; cursor: pointer;
+    flex-direction: column; gap: 14px; cursor: pointer; position: relative;
+  }
+  .flip-front video {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .flip-front-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: rgba(0,0,0,0.28);
   }
   .flip-front-label {
     font-family: var(--font-condensed); font-size: 12px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5);
+    letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.75);
   }
   .flip-back {
     transform: rotateY(180deg);
@@ -925,8 +933,11 @@ export default function StylzzByCliff() {
             <div key={p.id} className="gallery-flip">
               <div className="gallery-flip-inner">
                 <div className="flip-front" style={{ background: p.gradient }}>
-                  {Icons.play}
-                  <span className="flip-front-label">{p.label}</span>
+                  <video autoPlay muted loop playsInline src={p.videoSrc} />
+                  <div className="flip-front-overlay">
+                    {Icons.play}
+                    <span className="flip-front-label">{p.label}</span>
+                  </div>
                 </div>
                 <div className="flip-back">
                   <div className="flip-back-title">WATCH<br/>THE CUT</div>
