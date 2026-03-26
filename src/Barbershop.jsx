@@ -466,7 +466,7 @@ const css = `
     display: flex; gap: 40px; margin-top: 40px;
     padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.08);
   }
-  .stat-num { font-family: var(--font-display); font-size: 42px; font-weight: 400; color: var(--accent); letter-spacing: 1px; }
+  .stat-num { font-family: var(--font-display); font-size: 42px; font-weight: 400; color: var(--accent); letter-spacing: 1px; text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 28px rgba(255,255,255,0.5), 0 0 56px rgba(255,255,255,0.2); }
   .stat-label {
     font-family: var(--font-condensed); font-size: 12px;
     color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;
@@ -717,30 +717,30 @@ const css = `
 /* ── CountUp ── */
 function CountUp({ end, suffix = "", decimals = 0, duration = 2000 }) {
   const [count, setCount] = useState(0);
-  const [triggered, setTriggered] = useState(false);
   const ref = useRef(null);
+  const rafRef = useRef(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && !triggered) setTriggered(true); },
-      { threshold: 0.3 }
-    );
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        const start = performance.now();
+        const tick = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+          const val = eased * end;
+          setCount(decimals > 0 ? parseFloat(val.toFixed(decimals)) : Math.floor(val));
+          if (progress < 1) rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        setCount(0);
+      }
+    }, { threshold: 0.3 });
     if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [triggered]);
-
-  useEffect(() => {
-    if (!triggered) return;
-    const start = performance.now();
-    const tick = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      const val = eased * end;
-      setCount(decimals > 0 ? parseFloat(val.toFixed(decimals)) : Math.floor(val));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [triggered, end, duration, decimals]);
+    return () => { observer.disconnect(); if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [end, duration, decimals]);
 
   const display = decimals > 0
     ? count.toFixed(decimals)
