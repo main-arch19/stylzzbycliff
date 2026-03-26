@@ -83,10 +83,10 @@ const REVIEWS = [
 const INSTAGRAM_POSTS = [
   { id: 1, photo: "./photo1.jpeg", label: "Skin Fade"      },
   { id: 2, photo: "./photo2.jpeg", label: "Textured Crop"  },
-  { id: 3, photo: "./photo5.jpg",  label: "Fresh Cut",      flip: true },
+  { id: 3, photo: "./photo5.jpg",  label: "Fresh Cut"      },
   { id: 4, photo: "./photo3.jpeg", label: "Line Up"        },
   { id: 5, photo: "./photo4.jpeg", label: "Classic Taper"  },
-  { id: 6, photo: "./photo6.jpg",  label: "Sharp Lines",   flip: true },
+  { id: 6, photo: "./photo6.jpg",  label: "Sharp Lines"    },
 ];
 
 /* ── Icons ── */
