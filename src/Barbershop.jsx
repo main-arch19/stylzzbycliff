@@ -83,10 +83,10 @@ const REVIEWS = [
 const INSTAGRAM_POSTS = [
   { id: 1, photo: "./photo1.jpeg", label: "Skin Fade"      },
   { id: 2, photo: "./photo2.jpeg", label: "Textured Crop"  },
-  { id: 3, gradient: "linear-gradient(135deg, #3d322c, #1a1714)", label: "Fade in Motion", video: true, videoSrc: "./video1.mp4" },
+  { id: 3, photo: "./photo5.jpg",  label: "Fresh Cut",      flip: true },
   { id: 4, photo: "./photo3.jpeg", label: "Line Up"        },
   { id: 5, photo: "./photo4.jpeg", label: "Classic Taper"  },
-  { id: 6, gradient: "linear-gradient(135deg, #2c2420, #1a1714)", label: "Blade & Style",  video: true, videoSrc: "./video2.mp4" },
+  { id: 6, photo: "./photo6.jpg",  label: "Sharp Lines",   flip: true },
 ];
 
 /* ── Icons ── */
@@ -507,7 +507,7 @@ const css = `
     display: flex; align-items: center; justify-content: center;
     flex-direction: column; gap: 14px; cursor: pointer; position: relative;
   }
-  .flip-front video {
+  .flip-front video, .flip-front img {
     position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
   }
   .flip-front-overlay {
@@ -928,21 +928,20 @@ export default function StylzzByCliff() {
         <h2 className="section-title">LATEST WORK</h2>
         <p className="section-sub">Fresh cuts from the chair. Follow along for daily inspiration.</p>
         <div className="gallery-grid">
-          {INSTAGRAM_POSTS.map((p) => p.video ? (
+          {INSTAGRAM_POSTS.map((p) => p.flip ? (
             <div key={p.id} className="gallery-flip">
               <div className="gallery-flip-inner">
-                <div className="flip-front" style={{ background: p.gradient }}>
-                  <video autoPlay muted loop playsInline src={p.videoSrc} />
+                <div className="flip-front" style={{ background: "#1a1714" }}>
+                  <img src={p.photo} alt={p.label} />
                   <div className="flip-front-overlay">
-                    {Icons.play}
                     <span className="flip-front-label">{p.label}</span>
                   </div>
                 </div>
                 <div className="flip-back">
-                  <div className="flip-back-title">WATCH<br/>THE CUT</div>
-                  <div className="flip-back-sub">Video on Instagram</div>
+                  <div className="flip-back-title">VIEW<br/>THE LOOK</div>
+                  <div className="flip-back-sub">See it on Instagram</div>
                   <a href={BARBER.instagram} target="_blank" rel="noreferrer" className="flip-back-btn">
-                    {Icons.instagram} Watch Now
+                    {Icons.instagram} Follow
                   </a>
                 </div>
               </div>
