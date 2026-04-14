@@ -222,6 +222,7 @@ const css = `
   @keyframes scaleIn   { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
   @keyframes float     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
   @keyframes logoFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-10px) scale(1.02); } }
+  @keyframes btnBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   @keyframes lineGrow  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes progressPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(196,80,42,0.3); } 50% { box-shadow: 0 0 0 10px rgba(196,80,42,0); } }
   @keyframes heroGrain {
@@ -380,6 +381,23 @@ const css = `
     transition: var(--transition); text-decoration: none;
   }
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-loyalty {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--accent); color: white; padding: 16px 40px; border-radius: 6px;
+    font-family: var(--font-condensed); font-size: 15px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    border: none; cursor: pointer; transition: var(--transition);
+    text-decoration: none; position: relative; overflow: hidden;
+    animation: btnBounce 1.4s ease-in-out infinite;
+  }
+  .btn-loyalty::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+    transform: translateX(-100%); transition: 0.6s ease;
+  }
+  .btn-loyalty:hover::before { transform: translateX(100%); }
+  .btn-loyalty:hover { background: var(--accent-dark); box-shadow: 0 8px 32px rgba(196,80,42,0.3); }
 
   /* ── Sections ── */
   .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
@@ -854,6 +872,9 @@ export default function StylzzByCliff() {
             <button className="btn-secondary" onClick={() => scrollTo("services")}>
               View Services {Icons.chevron}
             </button>
+            <a href="#loyalty" className="btn-loyalty">
+              Loyalty App
+            </a>
           </div>
         </div>
         <div className="hero-scroll">Scroll to explore</div>
