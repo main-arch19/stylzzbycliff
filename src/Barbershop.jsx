@@ -399,6 +399,12 @@ const css = `
   .btn-loyalty:hover::before { transform: translateX(100%); }
   .btn-loyalty:hover { background: var(--accent-dark); box-shadow: 0 8px 32px rgba(196,80,42,0.3); }
 
+  .loyalty-tagline {
+    font-family: var(--font-condensed); font-size: 12px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-muted); text-align: center;
+    margin-top: 18px; max-width: 520px;
+  }
+
   /* ── Sections ── */
   .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
 
@@ -876,6 +882,9 @@ export default function StylzzByCliff() {
               Loyalty App
             </a>
           </div>
+          <p className="loyalty-tagline fade-up fade-up-d4">
+            Every visit counts. Earn your way to a free cut and other treatments of recognition — we value you as much as you value the service.
+          </p>
         </div>
         <div className="hero-scroll">Scroll to explore</div>
       </section>
