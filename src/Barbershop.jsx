@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import React from "react";
 
 /* ══════════════════════════════════════════
    STYLZZBYCLIFF — Edit your info here
@@ -63,15 +62,6 @@ const MEMBERSHIP_TIERS = [
   },
 ];
 
-const PRODUCTS = [
-  { id: 1, name: "Matte Clay Pomade",   price: 3500, image: "🫙", category: "Styling" },
-  { id: 2, name: "Beard Oil — Cedar",   price: 2800, image: "🧴", category: "Beard"   },
-  { id: 3, name: "Sea Salt Spray",      price: 2200, image: "💧", category: "Styling" },
-  { id: 4, name: "Charcoal Face Wash",  price: 3000, image: "🖤", category: "Skin"    },
-  { id: 5, name: "Boar Bristle Brush",  price: 4000, image: "🪮", category: "Tools"   },
-  { id: 6, name: "Aftershave Balm",     price: 2500, image: "✨", category: "Skin"    },
-];
-
 const REVIEWS = [
   { name: "Marcus T.", rating: 5, text: "Best fade I've ever had. The attention to detail is unmatched.",                                date: "2 days ago"   },
   { name: "David R.",  rating: 5, text: "Been coming here for 3 years. Consistently excellent every single time.",                       date: "1 week ago"   },
@@ -131,22 +121,6 @@ const Icons = {
       <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/>
     </svg>
   ),
-  cart: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-      <line x1="3" y1="6" x2="21" y2="6"/>
-      <path d="M16 10a4 4 0 01-8 0"/>
-    </svg>
-  ),
-  gift: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <polyline points="20,12 20,22 4,22 4,12"/>
-      <rect x="2" y="7" width="20" height="5"/>
-      <line x1="12" y1="22" x2="12" y2="7"/>
-      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-    </svg>
-  ),
   menu: (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
       <line x1="3" y1="6" x2="21" y2="6"/>
@@ -189,6 +163,7 @@ const css = `
     --accent-dark: #A33D1E;
     --accent-warm: #D4896E;
     --charcoal: #2A2520;
+    --bar-bg-rgb: 202, 195, 186; /* parchment tone sampled from the logo background */
     --border: #D9D4CB;
     --border-light: #E9E5DE;
     --shadow: 0 2px 24px rgba(26,23,20,0.07);
@@ -249,7 +224,7 @@ const css = `
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     height: var(--nav-height); display: flex; align-items: center; justify-content: space-between;
     padding: 0 28px;
-    background: rgba(196,187,179,0.92);
+    background: rgba(var(--bar-bg-rgb), 0.92);
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
     border-bottom: 1px solid rgba(160,152,144,0.4);
     transition: var(--transition);
@@ -562,28 +537,6 @@ const css = `
   .flip-back-btn:hover { background: var(--accent-light); }
 
   /* ── Loyalty ── */
-  .loyalty-card {
-    background: var(--bg-card); border: 1px solid var(--border-light);
-    border-radius: var(--radius); padding: 40px; position: relative; overflow: hidden;
-  }
-  .loyalty-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-warm), var(--accent));
-  }
-  .loyalty-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-  .loyalty-dots { display: flex; gap: 10px; align-items: center; margin: 28px 0 16px; }
-  .loyalty-dot {
-    width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-display); font-size: 16px; color: var(--text-tertiary);
-    transition: var(--transition); letter-spacing: 1px; flex-shrink: 0;
-  }
-  .loyalty-dot.filled { background: var(--accent); border-color: var(--accent); color: white; animation: progressPulse 2s ease infinite; }
-  .loyalty-dot.reward { border-color: var(--accent); color: var(--accent); width: 58px; height: 58px; }
-  .loyalty-connector { flex: 1; height: 2px; background: var(--border); }
-  .loyalty-connector.filled { background: var(--accent); }
-  .loyalty-info { font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
-  .loyalty-info strong { color: var(--text-primary); }
   .loyalty-btn {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--accent); color: white; padding: 14px 32px; border-radius: 6px;
@@ -624,26 +577,6 @@ const css = `
   .membership-card.recommended .membership-btn { background: var(--accent); color: white; border-color: var(--accent); }
   .membership-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 
-  /* ── Shop ── */
-  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
-  .product-card {
-    background: var(--bg-card); border: 1px solid var(--border-light);
-    border-radius: var(--radius); padding: 24px; text-align: center;
-    transition: var(--transition); cursor: pointer;
-  }
-  .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-  .product-emoji { font-size: 44px; margin-bottom: 16px; display: block; }
-  .product-cat { font-family: var(--font-condensed); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-  .product-name { font-weight: 500; font-size: 14px; margin-bottom: 8px; }
-  .product-price { font-family: var(--font-display); font-size: 24px; font-weight: 400; color: var(--text-primary); letter-spacing: 1px; }
-  .product-add {
-    margin-top: 16px; width: 100%; padding: 10px; border-radius: 6px;
-    border: 1px solid var(--border); background: transparent;
-    font-family: var(--font-condensed); font-size: 12px; font-weight: 700;
-    letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: var(--transition);
-  }
-  .product-add:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
   /* ── Reviews ── */
   .reviews-track {
     display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px;
@@ -679,28 +612,11 @@ const css = `
   /* ── Footer ── */
   .footer {
     text-align: center; padding: 60px 24px;
-    border-top: 1px solid var(--border-light);
-    background: var(--charcoal); color: rgba(255,255,255,0.5);
+    border-top: 1px solid rgba(42,37,32,0.08);
+    background: rgb(var(--bar-bg-rgb)); color: var(--text-secondary);
   }
-  .footer-logo { height: 56px; margin-bottom: 20px; opacity: 0.6; filter: brightness(3); }
+  .footer-logo { height: 56px; margin-bottom: 20px; opacity: 0.92; }
   .footer p { font-size: 13px; }
-
-  /* ── Cart badge ── */
-  .cart-fab {
-    position: fixed; bottom: 24px; right: 24px; z-index: 90;
-    background: var(--accent); color: white; width: 58px; height: 58px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 6px 24px rgba(196,80,42,0.35);
-    transition: var(--transition); animation: scaleIn 0.3s ease;
-    border: none;
-  }
-  .cart-fab:hover { transform: scale(1.1); background: var(--accent-dark); }
-  .cart-count {
-    position: absolute; top: -4px; right: -4px;
-    background: var(--charcoal); width: 22px; height: 22px; border-radius: 50%;
-    font-family: var(--font-condensed); font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; color: white;
-  }
 
   /* ── Toast ── */
   .toast {
@@ -726,9 +642,6 @@ const css = `
     .about-stats { gap: 24px; }
     .section { padding: 80px 20px; }
     .hero { padding: 100px 20px 80px; }
-    .products-grid { grid-template-columns: repeat(2, 1fr); }
-    .loyalty-dot { width: 40px; height: 40px; font-size: 13px; }
-    .loyalty-dot.reward { width: 48px; height: 48px; }
   }
 `;
 
@@ -774,11 +687,7 @@ export default function StylzzByCliff() {
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [menuClosing, setMenuClosing] = useState(false);
   const [scrolled,    setScrolled]    = useState(false);
-  const [loyalty,     setLoyalty]     = useState(3);
-  const [cart,        setCart]        = useState([]);
   const [toast,       setToast]       = useState(null);
-
-  const TOTAL_STEPS = 5;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -791,11 +700,6 @@ export default function StylzzByCliff() {
     setTimeout(() => setToast(null), 2500);
   };
 
-  const addToCart = (product) => {
-    setCart((prev) => [...prev, product]);
-    showToast(`${product.name} added to cart`);
-  };
-
   const closeMenu = () => {
     setMenuClosing(true);
     setTimeout(() => { setMenuOpen(false); setMenuClosing(false); }, 300);
@@ -804,17 +708,6 @@ export default function StylzzByCliff() {
   const scrollTo = (id) => {
     closeMenu();
     setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 100);
-  };
-
-  const handleLoyalty = () => {
-    if (loyalty < TOTAL_STEPS) {
-      const next = loyalty + 1;
-      setLoyalty(next);
-      showToast(next >= TOTAL_STEPS ? "🎉 Free haircut unlocked!" : "Visit recorded!");
-    } else {
-      setLoyalty(0);
-      showToast("Reward redeemed! Counter reset.");
-    }
   };
 
   return (
@@ -826,7 +719,7 @@ export default function StylzzByCliff() {
       <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
         <img src="./logo.jpg" alt={BARBER.shopName} className="nav-logo" />
         <div className="nav-links">
-          {[["services", "Services"], ["barber", "About"], ["gallery", "Gallery"], ["membership", "Membership"], ["shop", "Shop"]].map(([id, label]) => (
+          {[["services", "Services"], ["barber", "About"], ["gallery", "Gallery"], ["membership", "Membership"]].map(([id, label]) => (
             <button key={id} className="nav-link" onClick={() => scrollTo(id)}>{label}</button>
           ))}
           <a href={BARBER.bookingLink} className="nav-cta" target="_blank" rel="noreferrer">Book Now</a>
@@ -841,7 +734,7 @@ export default function StylzzByCliff() {
             <img src="./logo.jpg" alt={BARBER.shopName} className="nav-logo" />
             <button className="nav-hamburger" onClick={closeMenu}>{Icons.close}</button>
           </div>
-          {["services", "barber", "gallery", "loyalty", "membership", "shop", "reviews", "contact"].map((id) => (
+          {["services", "barber", "gallery", "loyalty", "membership", "reviews", "contact"].map((id) => (
             <button key={id} className="mobile-nav-link" onClick={() => scrollTo(id)}>
               {id.charAt(0).toUpperCase() + id.slice(1)}
             </button>
@@ -986,30 +879,7 @@ export default function StylzzByCliff() {
         <div className="section-label">Rewards</div>
         <h2 className="section-title">LOYALTY PROGRAM</h2>
         <p className="section-sub">Every visit counts. Earn your way to a free cut and other treatments of recognition — we value you as much as you value the service.</p>
-        <div className="loyalty-card">
-          <div className="loyalty-title">{Icons.gift} YOUR PROGRESS</div>
-          <div className="loyalty-dots">
-            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <React.Fragment key={i}>
-                <div className={`loyalty-dot${i < loyalty ? " filled" : ""}${i === TOTAL_STEPS - 1 ? " reward" : ""}`}>
-                  {i < loyalty ? "" : i === TOTAL_STEPS - 1 ? "🎁" : i + 1}
-                </div>
-                {i < TOTAL_STEPS - 1 && (
-                  <div className={`loyalty-connector${i < loyalty - 1 ? " filled" : ""}`} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="loyalty-info">
-            <strong>{loyalty} of {TOTAL_STEPS}</strong> visits completed.{" "}
-            {loyalty >= TOTAL_STEPS
-              ? "🎉 You've earned a FREE cut! Redeem on your next visit."
-              : `${TOTAL_STEPS - loyalty} more until your free haircut.`}
-          </p>
-          <button className="loyalty-btn" onClick={handleLoyalty}>
-            {loyalty >= TOTAL_STEPS ? "Redeem Reward" : "Record Visit"} (Demo)
-          </button>
-        </div>
+        <button className="loyalty-btn" type="button">Record Your Visit</button>
       </section>
 
       {/* ── Membership ── */}
@@ -1035,24 +905,6 @@ export default function StylzzByCliff() {
               >
                 {tier.name === "Classic" ? "Current Plan" : "Get Started"}
               </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Shop ── */}
-      <section className="section" id="shop">
-        <div className="section-label">Shop</div>
-        <h2 className="section-title">RECOMMENDED PRODUCTS</h2>
-        <p className="section-sub">The same products used in-chair, now for your daily routine.</p>
-        <div className="products-grid">
-          {PRODUCTS.map((p) => (
-            <div key={p.id} className="product-card">
-              <span className="product-emoji">{p.image}</span>
-              <div className="product-cat">{p.category}</div>
-              <div className="product-name">{p.name}</div>
-              <div className="product-price">${p.price.toLocaleString()}</div>
-              <button className="product-add" onClick={() => addToCart(p)}>Add to Cart</button>
             </div>
           ))}
         </div>
@@ -1112,14 +964,6 @@ export default function StylzzByCliff() {
         <img src="./logo.jpg" alt={BARBER.shopName} className="footer-logo" />
         <p>© {new Date().getFullYear()} STYLZZBYCLIFF. All rights reserved.</p>
       </footer>
-
-      {/* ── Cart FAB ── */}
-      {cart.length > 0 && (
-        <button className="cart-fab" onClick={() => showToast(`${cart.length} item(s) — $${cart.reduce((a, b) => a + b.price, 0).toLocaleString()}`)}>
-          {Icons.cart}
-          <span className="cart-count">{cart.length}</span>
-        </button>
-      )}
 
       {/* ── Toast ── */}
       {toast && <div className="toast">{toast}</div>}
