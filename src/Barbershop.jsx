@@ -144,7 +144,51 @@ const Icons = {
       <polyline points="20,6 9,17 4,12"/>
     </svg>
   ),
+  calendar: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  arrowLeft: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15,18 9,12 15,6"/>
+    </svg>
+  ),
 };
+
+/* ── Feedback helpers (haptic buzz + synthesized pop sound) ── */
+// Real vibration only fires where supported (Android/Chrome). iOS Safari ignores
+// it, so callers also toggle a `.vibrating` CSS class for a universal visual shake.
+function buzz(pattern = 25) {
+  try {
+    if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(pattern);
+  } catch { /* no-op */ }
+}
+
+// Synthesize a short "pop" with the Web Audio API — no asset needed. Must be
+// invoked from a user gesture (the Confirm click) to satisfy autoplay policies.
+function playPop() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.06);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.5, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    osc.start(now);
+    osc.stop(now + 0.2);
+    osc.onended = () => ctx.close();
+  } catch { /* no-op */ }
+}
 
 /* ── CSS ── */
 const css = `
@@ -629,6 +673,139 @@ const css = `
     white-space: nowrap;
   }
 
+  /* ── Booking ── */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.4); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .vibrating { animation: shake 0.32s cubic-bezier(0.36,0.07,0.19,0.97); }
+
+  .booking-card {
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 36px; margin-top: 8px; overflow: hidden;
+  }
+
+  /* Step progress */
+  .booking-steps { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
+  .booking-step { display: flex; align-items: center; gap: 8px; }
+  .booking-step-dot {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-condensed); font-weight: 700; font-size: 14px;
+    background: var(--bg-elevated); color: var(--text-tertiary);
+    border: 2px solid var(--border); transition: var(--transition);
+  }
+  .booking-step.active .booking-step-dot { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .booking-step.done .booking-step-dot { background: var(--charcoal); color: #fff; border-color: var(--charcoal); }
+  .booking-step-name {
+    font-family: var(--font-condensed); font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-tertiary);
+  }
+  .booking-step.active .booking-step-name { color: var(--text-primary); }
+  .booking-step-bar { flex: 1; min-width: 16px; height: 2px; background: var(--border); border-radius: 2px; }
+  .booking-step.done + .booking-step-bar { background: var(--accent); }
+
+  .booking-stage { animation: fadeUp 0.4s ease; }
+  .booking-stage-title { font-family: var(--font-display); font-size: 26px; letter-spacing: 2px; margin-bottom: 4px; }
+  .booking-stage-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+
+  .booking-back {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 18px;
+    background: none; border: none; cursor: pointer; color: var(--text-secondary);
+    font-family: var(--font-condensed); font-size: 13px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase; transition: var(--transition); padding: 0;
+  }
+  .booking-back:hover { color: var(--accent); }
+
+  /* Service picker */
+  .booking-cat-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 2px; color: var(--accent); margin: 20px 0 12px; }
+  .booking-cat-title:first-child { margin-top: 0; }
+  .booking-service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .booking-service {
+    text-align: left; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 18px 20px; cursor: pointer;
+    transition: var(--transition); position: relative;
+  }
+  .booking-service:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .booking-service.selected { border-color: var(--accent); background: var(--accent-light); }
+  .booking-service-name { font-family: var(--font-condensed); font-weight: 700; font-size: 17px; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .booking-service-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .booking-service-dur { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+  .booking-service-price { font-family: var(--font-display); font-size: 22px; color: var(--accent); letter-spacing: 1px; }
+
+  /* Calendar */
+  .booking-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .booking-cal-month { font-family: var(--font-display); font-size: 22px; letter-spacing: 2px; }
+  .booking-cal-nav {
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+    background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary);
+    display: flex; align-items: center; justify-content: center; transition: var(--transition);
+  }
+  .booking-cal-nav:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .booking-cal-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+  .booking-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .booking-cal-dow {
+    text-align: center; font-family: var(--font-condensed); font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--text-tertiary); padding-bottom: 6px;
+  }
+  .booking-cal-day {
+    aspect-ratio: 1; border-radius: var(--radius-sm); cursor: pointer;
+    background: var(--bg); border: 1px solid var(--border); color: var(--text-primary);
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; transition: var(--transition);
+  }
+  .booking-cal-day:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .booking-cal-day.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .booking-cal-day:disabled { opacity: 0.3; cursor: not-allowed; background: transparent; border-color: transparent; }
+  .booking-cal-day.empty { background: transparent; border: none; cursor: default; }
+  .booking-cal-legend { font-size: 12px; color: var(--text-tertiary); margin-top: 14px; }
+
+  /* Time slots */
+  .booking-time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .booking-time {
+    padding: 14px 10px; border-radius: var(--radius-sm); cursor: pointer;
+    background: var(--bg); border: 1px solid var(--border); color: var(--text-primary);
+    font-family: var(--font-condensed); font-weight: 600; font-size: 15px; letter-spacing: 0.5px;
+    transition: var(--transition);
+  }
+  .booking-time:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .booking-time.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Summary / confirm */
+  .booking-summary { display: grid; gap: 0; margin-bottom: 28px; border: 1px solid var(--border-light); border-radius: var(--radius); overflow: hidden; }
+  .booking-summary-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 22px; border-bottom: 1px solid var(--border-light); }
+  .booking-summary-row:last-child { border-bottom: none; }
+  .booking-summary-label { font-family: var(--font-condensed); font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-tertiary); }
+  .booking-summary-value { font-weight: 600; font-size: 16px; text-align: right; }
+  .booking-summary-value.price { font-family: var(--font-display); font-size: 24px; color: var(--accent); letter-spacing: 1px; }
+  .booking-confirm { width: 100%; justify-content: center; }
+
+  /* Thank-you */
+  .booking-thanks { text-align: center; padding: 24px 12px; animation: fadeIn 0.4s ease; }
+  .booking-thanks-mark {
+    width: 92px; height: 92px; margin: 0 auto 24px; border-radius: 50%;
+    background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 12px 40px rgba(196,80,42,0.35); animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .booking-thanks-mark svg { width: 48px; height: 48px; }
+  .booking-thanks-title { font-family: var(--font-display); font-size: clamp(34px, 6vw, 52px); letter-spacing: 3px; margin-bottom: 12px; }
+  .booking-thanks-title .accent { color: var(--accent); }
+  .booking-thanks-sub { font-size: 16px; color: var(--text-secondary); max-width: 460px; margin: 0 auto 28px; line-height: 1.6; }
+  .booking-thanks-card {
+    display: inline-block; text-align: left; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px 28px; margin-bottom: 28px; min-width: 280px;
+  }
+  .booking-thanks-card .booking-summary-row { padding: 10px 0; }
+  .booking-thanks-card .booking-summary-row:first-child { padding-top: 0; }
+  .booking-thanks-again { margin: 0 auto; }
+
   /* ── Responsive ── */
   @media (max-width: 768px) {
     .nav-links { display: none; }
@@ -642,6 +819,12 @@ const css = `
     .about-stats { gap: 24px; }
     .section { padding: 80px 20px; }
     .hero { padding: 100px 20px 80px; }
+    .booking-card { padding: 24px 18px; }
+    .booking-service-grid { grid-template-columns: 1fr; }
+    .booking-step-name { display: none; }
+    .booking-cal-grid { gap: 4px; }
+    .booking-cal-day { font-size: 14px; }
+    .booking-time-grid { grid-template-columns: repeat(3, 1fr); }
   }
 `;
 
@@ -680,6 +863,226 @@ function CountUp({ end, suffix = "", decimals = 0, duration = 2000 }) {
       : count;
 
   return <span ref={ref}>{display}{suffix}</span>;
+}
+
+/* ── Booking helpers (weekday hours parsed once from BARBER.hours) ── */
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const SLOT_MINUTES = 30;
+
+function parseClock(str) {
+  const m = String(str).trim().match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (h === 12) h = 0;
+  if (/pm/i.test(m[3])) h += 12;
+  return h * 60 + min;
+}
+
+function minsToLabel(mins) {
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}:${String(m).padStart(2, "0")} ${ampm}`;
+}
+
+// { Sunday: { open, close } | null, ... } in minutes-since-midnight
+const HOURS_BY_DAY = BARBER.hours.reduce((acc, { day, time }) => {
+  if (/closed/i.test(time)) { acc[day] = null; return acc; }
+  const [openStr, closeStr] = time.split(/\s*[–—-]\s*/);
+  const open = parseClock(openStr);
+  const close = parseClock(closeStr);
+  acc[day] = open != null && close != null ? { open, close } : null;
+  return acc;
+}, {});
+
+function slotsForDate(date) {
+  if (!date) return [];
+  const hours = HOURS_BY_DAY[DAY_NAMES[date.getDay()]];
+  if (!hours) return [];
+  const out = [];
+  for (let t = hours.open; t + SLOT_MINUTES <= hours.close; t += SLOT_MINUTES) out.push(minsToLabel(t));
+  return out;
+}
+
+function formatDate(d) {
+  return d ? d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
+}
+
+/* ── Sequential booking calendar ── */
+const BOOKING_STEPS = ["Service", "Date", "Time", "Confirm"];
+const STAGE_INDEX = { service: 0, date: 1, time: 2, confirm: 3, thanks: 4 };
+
+function BookingCalendar() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [stage, setStage]       = useState("service");
+  const [service, setService]   = useState(null);
+  const [date, setDate]         = useState(null);
+  const [time, setTime]         = useState(null);
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setMonth]   = useState(today.getMonth());
+  const [shaking, setShaking]   = useState(false);
+  const shakeTimer = useRef(null);
+
+  useEffect(() => () => { if (shakeTimer.current) clearTimeout(shakeTimer.current); }, []);
+
+  // Haptic buzz (Android/Chrome) + universal visual shake fallback.
+  const feedback = (pattern = 25) => {
+    buzz(pattern);
+    setShaking(true);
+    if (shakeTimer.current) clearTimeout(shakeTimer.current);
+    shakeTimer.current = setTimeout(() => setShaking(false), 340);
+  };
+
+  const pickService = (s) => { setService(s); feedback(); setStage("date"); };
+  const pickDate    = (d) => { setDate(d); setTime(null); feedback(); setStage("time"); };
+  const pickTime    = (t) => { setTime(t); feedback(); setStage("confirm"); };
+  const confirm     = () => { feedback([20, 40, 30]); playPop(); setStage("thanks"); };
+  const reset       = () => { setService(null); setDate(null); setTime(null); setStage("service"); };
+
+  const goMonth = (delta) => {
+    const total = viewMonth + delta;
+    setMonth(((total % 12) + 12) % 12);
+    setViewYear(viewYear + Math.floor(total / 12));
+  };
+
+  const stepIndex     = STAGE_INDEX[stage];
+  const firstWeekday  = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth   = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const atCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+  const slots         = slotsForDate(date);
+
+  return (
+    <div className={`booking-card${shaking ? " vibrating" : ""}`}>
+      {stage !== "thanks" && (
+        <div className="booking-steps">
+          {BOOKING_STEPS.flatMap((label, i) => {
+            const cls = i === stepIndex ? "active" : i < stepIndex ? "done" : "";
+            const items = [
+              <div key={label} className={`booking-step ${cls}`}>
+                <div className="booking-step-dot">{i < stepIndex ? Icons.check : i + 1}</div>
+                <span className="booking-step-name">{label}</span>
+              </div>,
+            ];
+            if (i < BOOKING_STEPS.length - 1) items.push(<div key={`${label}-bar`} className="booking-step-bar" />);
+            return items;
+          })}
+        </div>
+      )}
+
+      {stage === "service" && (
+        <div className="booking-stage">
+          <div className="booking-stage-title">Choose a service</div>
+          <div className="booking-stage-sub">Pick what you're coming in for.</div>
+          {["Hair Services", "Grooming"].map((cat) => (
+            <div key={cat}>
+              <div className="booking-cat-title">{cat.toUpperCase()}</div>
+              <div className="booking-service-grid">
+                {SERVICES.filter((s) => s.category === cat).map((s) => (
+                  <button
+                    key={s.id}
+                    className={`booking-service${service?.id === s.id ? " selected" : ""}`}
+                    onClick={() => pickService(s)}
+                  >
+                    <div className="booking-service-name">{s.name}</div>
+                    <div className="booking-service-meta">
+                      <span className="booking-service-dur">{Icons.clock} {s.duration}</span>
+                      <span className="booking-service-price">${s.price.toLocaleString()}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {stage === "date" && (
+        <div className="booking-stage">
+          <button className="booking-back" onClick={() => setStage("service")}>{Icons.arrowLeft} Back</button>
+          <div className="booking-stage-title">Pick a date</div>
+          <div className="booking-stage-sub">{service?.name} · {service?.duration}</div>
+          <div className="booking-cal-head">
+            <button className="booking-cal-nav" onClick={() => goMonth(-1)} disabled={atCurrentMonth} aria-label="Previous month">{Icons.arrowLeft}</button>
+            <div className="booking-cal-month">{MONTH_NAMES[viewMonth]} {viewYear}</div>
+            <button className="booking-cal-nav" onClick={() => goMonth(1)} aria-label="Next month">{Icons.chevron}</button>
+          </div>
+          <div className="booking-cal-grid">
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <div key={i} className="booking-cal-dow">{d}</div>)}
+            {Array.from({ length: firstWeekday }).map((_, i) => <div key={`pad${i}`} className="booking-cal-day empty" />)}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const d = new Date(viewYear, viewMonth, day);
+              const disabled = d < today || !HOURS_BY_DAY[DAY_NAMES[d.getDay()]];
+              const selected = date && d.getTime() === date.getTime();
+              return (
+                <button
+                  key={day}
+                  className={`booking-cal-day${selected ? " selected" : ""}`}
+                  disabled={disabled}
+                  onClick={() => pickDate(d)}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+          <div className="booking-cal-legend">Closed days and past dates are unavailable.</div>
+        </div>
+      )}
+
+      {stage === "time" && (
+        <div className="booking-stage">
+          <button className="booking-back" onClick={() => setStage("date")}>{Icons.arrowLeft} Back</button>
+          <div className="booking-stage-title">Pick a time</div>
+          <div className="booking-stage-sub">{formatDate(date)}</div>
+          {slots.length ? (
+            <div className="booking-time-grid">
+              {slots.map((t) => (
+                <button key={t} className={`booking-time${time === t ? " selected" : ""}`} onClick={() => pickTime(t)}>{t}</button>
+              ))}
+            </div>
+          ) : (
+            <p className="booking-stage-sub">No times available for this day — please choose another date.</p>
+          )}
+        </div>
+      )}
+
+      {stage === "confirm" && (
+        <div className="booking-stage">
+          <button className="booking-back" onClick={() => setStage("time")}>{Icons.arrowLeft} Back</button>
+          <div className="booking-stage-title">Confirm your booking</div>
+          <div className="booking-stage-sub">Review the details, then lock it in.</div>
+          <div className="booking-summary">
+            <div className="booking-summary-row"><span className="booking-summary-label">Service</span><span className="booking-summary-value">{service?.name}</span></div>
+            <div className="booking-summary-row"><span className="booking-summary-label">Date</span><span className="booking-summary-value">{formatDate(date)}</span></div>
+            <div className="booking-summary-row"><span className="booking-summary-label">Time</span><span className="booking-summary-value">{time}</span></div>
+            <div className="booking-summary-row"><span className="booking-summary-label">Price</span><span className="booking-summary-value price">${service?.price.toLocaleString()}</span></div>
+          </div>
+          <button className="btn-primary booking-confirm" onClick={confirm}>{Icons.scissors} Confirm Booking</button>
+        </div>
+      )}
+
+      {stage === "thanks" && (
+        <div className="booking-thanks">
+          <div className="booking-thanks-mark">{Icons.check}</div>
+          <div className="booking-thanks-title">WELCOME — <span className="accent">SEE YOU SOON</span></div>
+          <p className="booking-thanks-sub">Thank you, your chair is reserved. We can't wait to get you looking unforgettable.</p>
+          <div className="booking-thanks-card">
+            <div className="booking-summary-row"><span className="booking-summary-label">Service</span><span className="booking-summary-value">{service?.name}</span></div>
+            <div className="booking-summary-row"><span className="booking-summary-label">When</span><span className="booking-summary-value">{formatDate(date)} · {time}</span></div>
+          </div>
+          <div>
+            <button className="btn-secondary booking-thanks-again" onClick={reset}>Book Another</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ── Main component ── */
@@ -722,7 +1125,7 @@ export default function StylzzByCliff() {
           {[["services", "Services"], ["barber", "About"], ["gallery", "Gallery"], ["membership", "Membership"]].map(([id, label]) => (
             <button key={id} className="nav-link" onClick={() => scrollTo(id)}>{label}</button>
           ))}
-          <a href={BARBER.bookingLink} className="nav-cta" target="_blank" rel="noreferrer">Book Now</a>
+          <button className="nav-cta" onClick={() => scrollTo("booking")}>Book Now</button>
         </div>
         <button className="nav-hamburger" onClick={() => setMenuOpen(true)}>{Icons.menu}</button>
       </nav>
@@ -734,12 +1137,12 @@ export default function StylzzByCliff() {
             <img src="./logo.jpg" alt={BARBER.shopName} className="nav-logo" />
             <button className="nav-hamburger" onClick={closeMenu}>{Icons.close}</button>
           </div>
-          {["services", "barber", "gallery", "loyalty", "membership", "reviews", "contact"].map((id) => (
+          {["services", "booking", "barber", "gallery", "loyalty", "membership", "reviews", "contact"].map((id) => (
             <button key={id} className="mobile-nav-link" onClick={() => scrollTo(id)}>
-              {id.charAt(0).toUpperCase() + id.slice(1)}
+              {id === "booking" ? "Book" : id.charAt(0).toUpperCase() + id.slice(1)}
             </button>
           ))}
-          <a href={BARBER.bookingLink} className="btn-primary" style={{ marginTop: 32, justifyContent: "center" }} target="_blank" rel="noreferrer">Book Now</a>
+          <button className="btn-primary" style={{ marginTop: 32, justifyContent: "center" }} onClick={() => scrollTo("booking")}>Book Now</button>
         </div>
       )}
 
@@ -759,9 +1162,9 @@ export default function StylzzByCliff() {
             Precision cuts, creative styling, and an experience crafted just for you. Every chair visit is a masterpiece.
           </p>
           <div className="hero-ctas fade-up fade-up-d4">
-            <a href={BARBER.bookingLink} className="btn-primary" target="_blank" rel="noreferrer">
+            <button className="btn-primary" onClick={() => scrollTo("booking")}>
               {Icons.scissors} Book Now
-            </a>
+            </button>
             <button className="btn-secondary" onClick={() => scrollTo("services")}>
               View Services {Icons.chevron}
             </button>
@@ -782,7 +1185,7 @@ export default function StylzzByCliff() {
         <h3 className="services-category-title">HAIR SERVICES</h3>
         <div className="services-grid" style={{ marginBottom: 48 }}>
           {SERVICES.filter((s) => s.category === "Hair Services").map((s) => (
-            <div key={s.id} className="service-card" onClick={() => window.open(BARBER.bookingLink, "_blank")}>
+            <div key={s.id} className="service-card" onClick={() => scrollTo("booking")}>
               {s.popular && <div className="service-badge">Popular</div>}
               <h3>{s.name.toUpperCase()}</h3>
               <div className="service-meta"><span>{Icons.clock} {s.duration}</span></div>
@@ -795,7 +1198,7 @@ export default function StylzzByCliff() {
         <h3 className="services-category-title">GROOMING SERVICES</h3>
         <div className="services-grid">
           {SERVICES.filter((s) => s.category === "Grooming").map((s) => (
-            <div key={s.id} className="service-card" onClick={() => window.open(BARBER.bookingLink, "_blank")}>
+            <div key={s.id} className="service-card" onClick={() => scrollTo("booking")}>
               <h3>{s.name.toUpperCase()}</h3>
               <div className="service-meta"><span>{Icons.clock} {s.duration}</span></div>
               <p>{s.description}</p>
@@ -803,6 +1206,14 @@ export default function StylzzByCliff() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── Booking ── */}
+      <section className="section" id="booking">
+        <div className="section-label">{Icons.calendar} Book</div>
+        <h2 className="section-title">RESERVE YOUR CHAIR</h2>
+        <p className="section-sub">Pick a service, a date, and a time — done in a few taps.</p>
+        <BookingCalendar />
       </section>
 
       {/* ── About ── */}
@@ -815,9 +1226,9 @@ export default function StylzzByCliff() {
             <div className="section-label">The Artist</div>
             <h2 className="section-title">{BARBER.name.toUpperCase()}</h2>
             <p className="section-sub">{BARBER.bio}</p>
-            <a href={BARBER.bookingLink} className="btn-primary" target="_blank" rel="noreferrer" style={{ display: "inline-flex" }}>
+            <button className="btn-primary" onClick={() => scrollTo("booking")} style={{ display: "inline-flex" }}>
               Book a Session
-            </a>
+            </button>
             <div className="about-stats">
               <div>
                 <div className="stat-num"><CountUp end={10} suffix="+" duration={2000} /></div>
@@ -952,9 +1363,9 @@ export default function StylzzByCliff() {
               {Icons.instagram}
               <a href={BARBER.instagram} target="_blank" rel="noreferrer">@stylzzbycliff__thebarber</a>
             </div>
-            <a href={BARBER.bookingLink} className="btn-primary" target="_blank" rel="noreferrer" style={{ marginTop: 28, display: "inline-flex" }}>
+            <button className="btn-primary" onClick={() => scrollTo("booking")} style={{ marginTop: 28, display: "inline-flex" }}>
               {Icons.scissors} Book Now
-            </a>
+            </button>
           </div>
         </div>
       </section>
